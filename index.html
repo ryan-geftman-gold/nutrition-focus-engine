@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dietitian's Focus Engine</title>
+    <!-- Load Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom loading animation */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4 font-sans">
+
+    <div class="w-full max-w-2xl bg-white shadow-2xl rounded-xl p-8 space-y-8">
+        <header class="text-center">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">🍎 Dietitian's Focus Engine</h1>
+            <p class="text-gray-500">Find the one, most basic health benefit of any food, explained clearly.</p>
+        </header>
+
+        <!-- Input Section -->
+        <div class="flex flex-col space-y-4">
+            <label for="foodInput" class="text-lg font-medium text-gray-700">Enter a Food:</label>
+            <input 
+                type="text" 
+                id="foodInput" 
+                placeholder="e.g., Avocado, Almonds, Broccoli" 
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-800 shadow-sm"
+            >
+            <button 
+                id="generateButton" 
+                class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition duration-150 ease-in-out shadow-lg flex items-center justify-center disabled:bg-gray-400"
+            >
+                <span id="buttonText">Analyze Food</span>
+                <div id="loader" class="loader hidden ml-2"></div>
+            </button>
+        </div>
+
+        <!-- Output Section -->
+        <div id="outputContainer" class="hidden">
+            <h2 class="text-xl font-semibold text-gray-800 border-b pb-2 mb-4">Nutritional Focus:</h2>
+            <div id="resultText" class="p-4 bg-blue-50 border-l-4 border-blue-400 rounded-lg text-gray-700">
+                The result will appear here.
+            </div>
+            <div id="errorText" class="mt-4 p-4 bg-red-100 border-l-4 border-red-500 rounded-lg text-red-700 hidden">
+                An error occurred.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Gemini API Configuration ---
+        // 1. Check if running in a secure environment (like Canvas) where the key is provided.
+        // 2. If not, the API key is empty, and the request is blocked, which is correct for security outside of this environment.
+        const API_KEY = ""; 
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${API_KEY}`;
+        
+        // --- System Instruction (Your Custom Engine Logic) ---
+        // This is where we define the persona and the exact output format you want.
+        const SYSTEM_INSTRUCTION = `
+            You are an expert registered dietitian. Your entire focus is identifying and explaining the ONE main health benefit above all others of a food, in the most basic terms possible.
+            
+            Your response MUST be exactly two sentences, back-to-back:
+            1. The first sentence must state the main benefit and the core nutrient/component responsible.
+            2. The second sentence must clearly explain, in simple terms, why that benefit matters (the practical outcome).
+
+            Use this strict structure:
+            "The main health benefit of [food], above all others, is its role as an exceptional source of [nutrient/component], which is crucial for [function] and [function]. This [nutrient/component descriptor] strengthens [practical outcome 1], protects [practical outcome 2], and is essential for [practical outcome 3]."
+        `;
+
+        // --- DOM Elements ---
+        const foodInput = document.getElementById('foodInput');
+        const generateButton = document.getElementById('generateButton');
+        const buttonText = document.getElementById('buttonText');
+        const loader = document.getElementById('loader');
+        const outputContainer = document.getElementById('outputContainer');
+        const resultText = document.getElementById('resultText');
+        const errorText = document.getElementById('errorText');
+
+        // --- Event Listener ---
+        generateButton.addEventListener('click', generateNutritionFocus);
+
+        /**
+         * Converts the plain API text response into a structured payload for the API call.
+         * This includes the System Instruction (your custom engine rules) and the user's query.
+         */
+        function createApiPayload(foodName) {
+            return {
+                contents: [{ 
+                    parts: [{ text: foodName }] 
+                }],
+                systemInstruction: {
+                    parts: [{ text: SYSTEM_INSTRUCTION }]
+                },
+                tools: [{ "google_search": {} }] // Enable Google Search for real-time nutritional facts
+            };
+        }
+
+        /**
+         * Calls the Gemini API to get the structured nutritional focus.
+         */
+        async function generateNutritionFocus() {
+            const foodName = foodInput.value.trim();
+            if (!foodName) {
+                displayError("Please enter a food name to analyze.");
+                return;
+            }
+
+            // UI State: Loading
+            generateButton.disabled = true;
+            buttonText.textContent = "Analyzing...";
+            loader.classList.remove('hidden');
+            outputContainer.classList.add('hidden');
+            resultText.textContent = '';
+            errorText.classList.add('hidden');
+
+            const payload = createApiPayload(foodName);
+
+            try {
+                // Initial API call attempt
+                let response = await fetchWithRetry(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    // Check for common error codes indicating missing API key or security block
+                    if (response.status === 400 || response.status === 403) {
+                         // The error message is updated to reflect the most common issue when running locally
+                        throw new Error(`The API request failed. If running this file directly from your computer (file:///), the browser is blocking it or the API key is missing. Try running this in the Canvas Preview or a proper web server.`);
+                    }
+                    throw new Error(`API returned status ${response.status}`);
+                }
+
+                const result = await response.json();
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (text) {
+                    displayResult(text);
+                } else {
+                    displayError("Analysis failed. The model returned an empty response.");
+                }
+
+            } catch (error) {
+                console.error("Gemini API Error:", error);
+                // Use the custom error message if it was set in the catch block above
+                if (error.message.includes('The API request failed')) {
+                     displayError(error.message);
+                } else {
+                    displayError("Could not retrieve the nutritional benefit. Please try again.");
+                }
+            } finally {
+                // UI State: Ready
+                generateButton.disabled = false;
+                buttonText.textContent = "Analyze Food";
+                loader.classList.add('hidden');
+            }
+        }
+        
+        // --- Utility Functions ---
+
+        /**
+         * Helper function to perform fetch with exponential backoff for resilience.
+         */
+        async function fetchWithRetry(url, options, maxRetries = 3, delay = 1000) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.status !== 429) { // Not throttling
+                        return response;
+                    }
+                    if (i < maxRetries - 1) {
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        delay *= 2; // Exponential backoff
+                    }
+                } catch (error) {
+                    if (i < maxRetries - 1) {
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        delay *= 2;
+                    } else {
+                        throw error;
+                    }
+                }
+            }
+            throw new Error('Max retries reached, still throttled or failing.');
+        }
+
+        /**
+         * Displays the final generated text result.
+         */
+        function displayResult(text) {
+            outputContainer.classList.remove('hidden');
+            resultText.innerHTML = text.replace(/\n/g, '<br>'); // Display newlines properly
+            errorText.classList.add('hidden');
+        }
+
+        /**
+         * Displays an error message to the user.
+         */
+        function displayError(message) {
+            outputContainer.classList.remove('hidden');
+            resultText.textContent = "Error";
+            errorText.textContent = message;
+            errorText.classList.remove('hidden');
+        }
+
+    </script>
+</body>
+</html>
