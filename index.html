@@ -1,199 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dietitian's Focus Engine</title>
-    <!-- Load Tailwind CSS for modern, responsive styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Custom font and base styles */
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f7f7f7;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-        }
-        .container-card {
-            max-width: 480px;
-            width: 100%;
-            background-color: white;
-            padding: 32px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        }
-        .error-message {
-            background-color: #fef2f2;
-            color: #b91c1c;
-            border: 1px solid #fca5a5;
-        }
-        .success-message {
-            background-color: #eff6ff;
-            color: #1e40af;
-            border: 1px solid #93c5fd;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dietitian's Focus Engine</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color:#f7f7f7; display:flex; justify-content:center; align-items:center; min-height:100vh; margin:0; padding:20px; }
+    .container-card { max-width:480px; width:100%; background:white; padding:32px; border-radius:16px; box-shadow:0 10px 25px rgba(0,0,0,0.1); }
+    .error-message{ background:#fef2f2; color:#b91c1c; border:1px solid #fca5a5; }
+    .success-message{ background:#eff6ff; color:#1e40af; border:1px solid #93c5fd; }
+    .hidden{ display:none !important; }
+  </style>
 </head>
 <body>
-
-    <div class="container-card">
-        <div class="text-center mb-6">
-            <h1 class="text-3xl font-bold text-gray-800 flex items-center justify-center">
-                <span class="mr-2">🍎</span> Dietitian's Focus Engine
-            </h1>
-            <p class="text-gray-500 mt-1 text-sm">Find the one, most basic health benefit of any food, explained clearly.</p>
-        </div>
-
-        <label for="foodInput" class="block text-sm font-medium text-gray-700 mb-2">Enter a Food:</label>
-        <input type="text" id="foodInput" placeholder="e.g., Avocado, Quinoa, Walnuts" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 mb-6" oninput="toggleButton()">
-
-        <button id="analyzeButton" onclick="generateNutritionFocus()" class="w-full bg-blue-600 text-white p-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-150 disabled:bg-blue-300 flex items-center justify-center" disabled>
-            Analyze Food
-            <svg id="loadingSpinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-        </button>
-
-        <h2 class="text-lg font-semibold text-gray-800 mt-8 mb-2">Nutritional Focus:</h2>
-
-        <div id="resultBox" class="min-h-16 p-4 rounded-lg success-message text-sm mb-2">
-            <!-- Output will appear here -->
-        </div>
-
-        <div id="errorBox" class="min-h-16 p-4 rounded-lg error-message text-sm hidden">
-            <!-- Errors will appear here -->
-        </div>
-        
-        <p class="text-xs text-gray-400 mt-2 text-center">Version: FINAL API KEY FIX (Standard Endpoint)</p>
+  <div class="container-card">
+    <div class="text-center mb-6">
+      <h1 class="text-3xl font-bold text-gray-800 flex items-center justify-center">
+        <span class="mr-2">🍎</span> Dietitian's Focus Engine
+      </h1>
+      <p class="text-gray-500 mt-1 text-sm">Find the one, most basic health benefit of any food, explained clearly.</p>
     </div>
 
-    <script>
-        // --- Gemini API Configuration ---
-        // Replace "YOUR_API_KEY_HERE" with your actual key (must be kept inside the quotation marks)
-        const API_KEY = "AIzaSyCHyx_WeGZ3xhhohhNf1RaLLtwPA0PGYhY"; 
-        
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${API_KEY}`;
-        
-        // --- System Instruction (Your Custom Engine Logic) ---
-        const SYSTEM_INSTRUCTION = `
-            You are an enthusiastic and encouraging registered dietitian. Your entire focus is identifying and celebrating the single, most powerful health benefit of any food, explaining it clearly to promote healthy eating. Always maintain an encouraging and positive tone.
+    <label for="foodInput" class="block text-sm font-medium text-gray-700 mb-2">Enter a Food:</label>
+    <input type="text" id="foodInput" placeholder="e.g., Avocado, Quinoa, Walnuts" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 mb-6" oninput="toggleButton()" />
 
-            Your response MUST be exactly two sentences, back-to-back:
-            1. The first sentence must state the main benefit and the core nutrient/component responsible.
-            2. The second sentence must clearly explain, in simple terms, why that benefit matters (the practical outcome), using positive and encouraging language.
+    <button id="analyzeButton" onclick="generateNutritionFocus()" class="w-full bg-blue-600 text-white p-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-150 disabled:bg-blue-300 flex items-center justify-center" disabled>
+      <svg id="loadingSpinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      <span id="analyzeLabel">Analyze Food</span>
+    </button>
 
-            Use this strict structure:
-            "The main health benefit of [food], above all others, is their role as an exceptional source of [nutrient/component], which is crucial for [function] and [function]. This [nutrient/component descriptor] actively helps to [positive outcome 1], while supporting [positive outcome 2] and promoting [long-term well-being benefit]!"
-        `;
+    <h2 class="text-lg font-semibold text-gray-800 mt-8 mb-2">Nutritional Focus:</h2>
 
-        // --- DOM Elements ---
-        const foodInput = document.getElementById('foodInput');
-        const analyzeButton = document.getElementById('analyzeButton');
-        const resultBox = document.getElementById('resultBox');
-        const errorBox = document.getElementById('errorBox');
-        const loadingSpinner = document.getElementById('loadingSpinner');
+    <div id="resultBox" class="min-h-16 p-4 rounded-lg success-message text-sm mb-2 hidden"></div>
 
-        // Function to enable/disable button based on input
-        function toggleButton() {
-            analyzeButton.disabled = foodInput.value.trim() === '';
-        }
+    <div id="errorBox" class="min-h-16 p-4 rounded-lg error-message text-sm hidden"></div>
+    
+    <p class="text-xs text-gray-400 mt-2 text-center">Version: MOCK MODE (no API)</p>
+  </div>
 
-        // Function to display the analysis result
-        async function generateNutritionFocus() {
-            const foodName = foodInput.value.trim();
+  <script>
+    const foodInput = document.getElementById('foodInput');
+    const analyzeButton = document.getElementById('analyzeButton');
+    const resultBox = document.getElementById('resultBox');
+    const errorBox = document.getElementById('errorBox');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const analyzeLabel = document.getElementById('analyzeLabel');
 
-            if (!foodName) return;
+    function toggleButton() {
+      analyzeButton.disabled = foodInput.value.trim() === '';
+    }
 
-            // Clear previous results and show loading
-            resultBox.textContent = '';
-            resultBox.classList.add('hidden');
-            errorBox.classList.add('hidden');
-            analyzeButton.disabled = true;
-            analyzeButton.textContent = 'Analyzing...';
-            loadingSpinner.classList.remove('hidden');
+    // Simple mock "analysis" function: returns 2-sentence response following your required structure.
+    function mockAnalyze(food) {
+      // Basic mapping for a few known foods; otherwise a safe default.
+      const map = {
+        avocado: {
+          nutrient: "monounsaturated fat",
+          functions: "heart health and steady energy",
+          why: "It helps lower bad cholesterol while providing lasting satiety, supporting better weight control and long-term cardiovascular health"
+        },
+        quinoa: {
+          nutrient: "complete plant protein",
+          functions: "muscle repair and balanced blood sugar",
+          why: "It provides all essential amino acids needed for rebuilding tissues and helps stabilize energy levels between meals, supporting sustained activity and metabolic health"
+        },
+        walnuts: {
+          nutrient: "omega-3 fatty acids (ALA)",
+          functions: "brain and heart support",
+          why: "These fats support healthy brain function and reduce inflammation, helping cognitive performance and long-term heart health"
+        },
+      };
 
-            try {
-                // The problematic API key check has been removed here to resolve the caching conflict.
-                
-                const userQuery = `Analyze the food: ${foodName}`;
+      const key = food.toLowerCase().trim();
+      const entry = map[key] || {
+        nutrient: "a concentrated set of beneficial nutrients",
+        functions: "important bodily functions",
+        why: "These nutrients contribute to better function and well-being when included regularly in a balanced diet"
+      };
 
-                const payload = {
-                    contents: [{ parts: [{ text: userQuery }] }],
-                    tools: [{ "google_search": {} }], // Enable Google Search for grounding
-                    systemInstruction: {
-                        parts: [{ text: SYSTEM_INSTRUCTION }]
-                    },
-                    // Set temperature lower to encourage strict adherence to format
-                    config: {
-                        temperature: 0.2
-                    }
-                };
+      // Build the two-sentence response exactly as required
+      const sentence1 = `The main health benefit of ${food}, above all others, is their role as an exceptional source of ${entry.nutrient}, which is crucial for ${entry.functions}.`;
+      const sentence2 = `This ${entry.nutrient} actively helps to ${entry.why.split(',')[0]}, while supporting ${entry.why.split(' and ')[1] || 'overall health'} and promoting long-term well-being!`;
 
-                // Exponential backoff logic
-                const maxRetries = 3;
-                let response;
+      return `${sentence1} ${sentence2}`;
+    }
 
-                for (let i = 0; i < maxRetries; i++) {
-                    try {
-                        response = await fetch(API_URL, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload)
-                        });
+    async function generateNutritionFocus() {
+      const foodName = foodInput.value.trim();
+      if (!foodName) return;
 
-                        if (response.ok) {
-                            break; // Success! Exit loop
-                        } else {
-                            // Throw error to retry if API returns non-OK status
-                            throw new Error(`API returned status ${response.status}`);
-                        }
-                    } catch (fetchError) {
-                        if (i === maxRetries - 1) {
-                            throw fetchError; // Rethrow final error
-                        }
-                        const delay = Math.pow(2, i) * 1000; // 1s, 2s, 4s
-                        await new Promise(resolve => setTimeout(resolve, delay));
-                    }
-                }
+      // UI: clear and show loading
+      resultBox.classList.add('hidden');
+      errorBox.classList.add('hidden');
+      resultBox.textContent = '';
+      errorBox.textContent = '';
 
-                const result = await response.json();
-                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+      analyzeButton.disabled = true;
+      loadingSpinner.classList.remove('hidden');
+      analyzeLabel.textContent = 'Analyzing...';
 
-                if (text) {
-                    resultBox.textContent = text;
-                    resultBox.classList.remove('hidden');
-                } else {
-                    errorBox.textContent = "Could not retrieve the nutritional benefit. Please try again.";
-                    errorBox.classList.remove('hidden');
-                }
+      try {
+        // Simulate short delay as if contacting an API
+        await new Promise(resolve => setTimeout(resolve, 700));
 
-            } catch (error) {
-                console.error("Fetch error:", error);
-                errorBox.textContent = `Network Error: Failed to connect to the Gemini API. Please check your key and try again.`;
-                errorBox.classList.remove('hidden');
-            } finally {
-                analyzeButton.textContent = 'Analyze Food';
-                loadingSpinner.classList.add('hidden');
-                toggleButton();
-            }
-        }
+        const text = mockAnalyze(foodName);
 
-        // Initial check to enable button if input has text (for cases like refresh)
-        window.onload = function() {
-            toggleButton();
-        };
+        // Display result
+        resultBox.textContent = text;
+        resultBox.classList.remove('hidden');
+      } catch (err) {
+        errorBox.textContent = 'Unexpected error: ' + (err.message || err);
+        errorBox.classList.remove('hidden');
+      } finally {
+        analyzeLabel.textContent = 'Analyze Food';
+        loadingSpinner.classList.add('hidden');
+        toggleButton();
+      }
+    }
 
-        // Allow pressing Enter key to run analysis
-        foodInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && !analyzeButton.disabled) {
-                generateNutritionFocus();
-            }
-        });
-    </script>
+    // Allow Enter to submit
+    foodInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter' && !analyzeButton.disabled) {
+        generateNutritionFocus();
+      }
+    });
+
+    window.onload = toggleButton;
+  </script>
 </body>
 </html>
