@@ -78,7 +78,6 @@
         const API_KEY = "AIzaSyCHyx_WeGZ3xhhohhNf1RaLLtwPA0PGYhY"; 
         
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${API_KEY}`;
-        const API_KEY_PLACEHOLDER = "AIzaSyCHyx_WeGZ3xhhohhNf1RaLLtwPA0PGYhY";
         
         // --- System Instruction (Your Custom Engine Logic) ---
         const SYSTEM_INSTRUCTION = `
@@ -119,8 +118,7 @@
             loadingSpinner.classList.remove('hidden');
 
             try {
-                // Remove the check here to avoid the configuration error, 
-                // as the key is expected to be inserted by the user now.
+                // The problematic API key check has been removed here to resolve the caching conflict.
                 
                 const userQuery = `Analyze the food: ${foodName}`;
 
