@@ -4,88 +4,97 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dietitian's Focus Engine</title>
-    <!-- Load Tailwind CSS for styling -->
+    <!-- Load Tailwind CSS from CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
+    <!-- Set a custom font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Custom loading animation */
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
         }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4 font-sans">
+<body class="selection:bg-red-100">
 
-    <div class="w-full max-w-2xl bg-white shadow-2xl rounded-xl p-8 space-y-8">
-        <header class="text-center">
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">🍎 Dietitian's Focus Engine</h1>
-            <p class="text-gray-500">Find the one, most basic health benefit of any food, explained clearly.</p>
+    <!-- Main Application Card -->
+    <div class="w-full max-w-md bg-white p-6 md:p-8 rounded-xl shadow-2xl border border-gray-100">
+        
+        <header class="text-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800 flex items-center justify-center space-x-2">
+                <span role="img" aria-label="apple">🍎</span>
+                <span>Dietitian's Focus Engine</span>
+            </h1>
+            <p class="text-sm text-gray-500 mt-1">
+                Find the one, most basic health benefit of any food, explained clearly.
+            </p>
         </header>
 
         <!-- Input Section -->
-        <div class="flex flex-col space-y-4">
-            <label for="foodInput" class="text-lg font-medium text-gray-700">Enter a Food:</label>
+        <div class="mb-6">
+            <label for="food-input" class="block text-sm font-medium text-gray-700 mb-2">Enter a Food:</label>
             <input 
                 type="text" 
-                id="foodInput" 
-                placeholder="e.g., Avocado, Almonds, Broccoli" 
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-800 shadow-sm"
+                id="food-input" 
+                placeholder="e.g., Avocado, Lentils, Salmon" 
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 shadow-sm"
+                value=""
+                onkeydown="if(event.key === 'Enter') document.getElementById('analyze-button').click()"
             >
-            <button 
-                id="generateButton" 
-                class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition duration-150 ease-in-out shadow-lg flex items-center justify-center disabled:bg-gray-400"
-            >
-                <span id="buttonText">Analyze Food</span>
-                <div id="loader" class="loader hidden ml-2"></div>
-            </button>
         </div>
 
+        <!-- Analyze Button -->
+        <button 
+            id="analyze-button" 
+            onclick="generateNutritionFocus()" 
+            class="w-full flex items-center justify-center px-4 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition duration-150 shadow-lg shadow-blue-300/50 transform hover:scale-[1.01] active:scale-[0.99] disabled:bg-blue-400"
+            disabled
+        >
+            Analyze Food
+            <svg id="loading-spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+        </button>
+
         <!-- Output Section -->
-        <div id="outputContainer" class="hidden">
-            <h2 class="text-xl font-semibold text-gray-800 border-b pb-2 mb-4">Nutritional Focus:</h2>
-            <div id="resultText" class="p-4 bg-blue-50 border-l-4 border-blue-400 rounded-lg text-gray-700">
-                The result will appear here.
+        <div class="mt-8">
+            <h2 class="text-lg font-semibold text-gray-700 mb-3">Nutritional Focus:</h2>
+            
+            <!-- Result Box (Success/Default) -->
+            <div id="result-box" class="min-h-[6rem] p-4 border border-blue-200 bg-blue-50 text-blue-800 rounded-lg shadow-inner flex items-center justify-center text-center transition-all duration-300">
+                Enter a food to get started.
             </div>
-            <div id="errorText" class="mt-4 p-4 bg-red-100 border-l-4 border-red-500 rounded-lg text-red-700 hidden">
-                An error occurred.
+
+            <!-- Error Box -->
+            <div id="error-box" class="hidden mt-3 p-4 border border-red-300 bg-red-50 text-red-700 rounded-lg shadow-inner transition-all duration-300">
+                Could not retrieve the nutritional benefit. Please try again.
             </div>
-        </div>
-        
-        <!-- Troubleshooting element to check the active code version -->
-        <div id="versionCheck" class="text-xs text-gray-400 text-center pt-4 border-t mt-4">
-            Version: FINAL PROXY FIX
         </div>
 
     </div>
 
+    <!-- Debug/Version Footer -->
+    <footer class="absolute bottom-2 text-xs text-gray-400">
+        Version: FINAL API KEY FIX (Standard Endpoint)
+    </footer>
+
+    <!-- JavaScript for Gemini API Call -->
     <script>
-        // --- Gemini API Configuration ---
-        // Using a keyless proxy endpoint for public demos to bypass API key errors when hosted on GitHub Pages.
-        // We do not need the API_KEY variable or the ?key= parameter in the URL.
-        const API_URL = `https://gemini-proxy-api.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent`;
+        // Set the API Key and URL for the standard Gemini endpoint
+        // NOTE: Replace "YOUR_API_KEY_HERE" with your actual key.
+        const API_KEY = "AIzaSyCHyx_WeGZ3xhhohhNf1RaLLtwPA0PGYhY"; 
+        
+        // Use the standard, reliable API endpoint
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${API_KEY}`;
         
         // --- System Instruction (Your Custom Engine Logic) ---
-        // This is where we define the persona and the exact output format you want.
+        // This is the core of your custom engine. It constrains the model's behavior.
         const SYSTEM_INSTRUCTION = `
             You are an expert registered dietitian. Your entire focus is identifying and explaining the ONE main health benefit above all others of a food, in the most basic terms possible.
             
@@ -97,134 +106,111 @@
             "The main health benefit of [food], above all others, is its role as an exceptional source of [nutrient/component], which is crucial for [function] and [function]. This [nutrient/component descriptor] strengthens [practical outcome 1], protects [practical outcome 2], and is essential for [practical outcome 3]."
         `;
 
-        // --- DOM Elements ---
-        const foodInput = document.getElementById('foodInput');
-        const generateButton = document.getElementById('generateButton');
-        const buttonText = document.getElementById('buttonText');
-        const loader = document.getElementById('loader');
-        const outputContainer = document.getElementById('outputContainer');
-        const resultText = document.getElementById('resultText');
-        const errorText = document.getElementById('errorText');
+        // --- UI Element References ---
+        const foodInput = document.getElementById('food-input');
+        const analyzeButton = document.getElementById('analyze-button');
+        const resultBox = document.getElementById('result-box');
+        const errorBox = document.getElementById('error-box');
+        const loadingSpinner = document.getElementById('loading-spinner');
 
-        // --- Event Listener ---
-        generateButton.addEventListener('click', generateNutritionFocus);
+        // --- Input Validation ---
+        foodInput.addEventListener('input', () => {
+            analyzeButton.disabled = foodInput.value.trim() === '';
+        });
 
-        /**
-         * Converts the plain API text response into a structured payload for the API call.
-         * This includes the System Instruction (your custom engine rules) and the user's query.
-         */
-        function createApiPayload(foodName) {
-            return {
-                contents: [{ 
-                    parts: [{ text: foodName }] 
-                }],
-                systemInstruction: {
-                    parts: [{ text: SYSTEM_INSTRUCTION }]
-                },
-                tools: [{ "google_search": {} }] // Enable Google Search for real-time nutritional facts
-            };
+        // --- Utility Function for Exponential Backoff (Retries API calls) ---
+        async function fetchWithRetry(url, payload, maxRetries = 5) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        return await response.json();
+                    } else if (response.status === 429 && i < maxRetries - 1) {
+                        const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        continue; // Retry the request
+                    } else {
+                        const errorData = await response.json();
+                        throw new Error(`API Error: ${response.status} - ${errorData.error?.message || 'Unknown API issue'}`);
+                    }
+                } catch (error) {
+                    if (i === maxRetries - 1) {
+                        throw error;
+                    }
+                    const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
         }
 
-        /**
-         * Calls the Gemini API to get the structured nutritional focus.
-         */
+
+        // --- Core Function: Call Gemini API ---
         async function generateNutritionFocus() {
             const foodName = foodInput.value.trim();
-            if (!foodName) {
-                displayError("Please enter a food name to analyze.");
+            if (!foodName) return;
+            
+            // 1. Check for API Key
+            if (API_KEY === "AIzaSyCHyx_WeGZ3xhhohhNf1RaLLtwPA0PGYhY" || API_KEY === "") {
+                errorBox.textContent = "Configuration Error: Please replace 'YOUR_API_KEY_HERE' in the code with your actual Gemini API Key.";
+                errorBox.classList.remove('hidden');
+                resultBox.classList.add('hidden');
                 return;
             }
 
-            // UI State: Loading
-            generateButton.disabled = true;
-            buttonText.textContent = "Analyzing...";
-            loader.classList.remove('hidden');
-            outputContainer.classList.add('hidden');
-            resultText.textContent = '';
-            errorText.classList.add('hidden');
+            // 2. Set Loading State
+            analyzeButton.disabled = true;
+            loadingSpinner.classList.remove('hidden');
+            resultBox.innerHTML = '<span class="text-gray-500">Analyzing... Please wait.</span>';
+            resultBox.classList.remove('bg-blue-50', 'text-blue-800', 'border-blue-200');
+            resultBox.classList.remove('hidden');
+            errorBox.classList.add('hidden');
+            
+            const userQuery = `Analyze the food: ${foodName}`;
 
-            const payload = createApiPayload(foodName);
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                
+                // Enable Google Search grounding for up-to-date, accurate nutritional info
+                tools: [{ "google_search": {} }], 
+                
+                // Your custom engine instructions are injected here
+                systemInstruction: {
+                    parts: [{ text: SYSTEM_INSTRUCTION }]
+                },
+            };
 
             try {
-                // Initial API call attempt
-                let response = await fetchWithRetry(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) {
-                    // Provide a generic, user-friendly error message if the API call fails
-                    throw new Error(`The remote service is currently unavailable. Please try again in a few moments.`);
-                }
-
-                const result = await response.json();
+                const result = await fetchWithRetry(API_URL, payload);
+                
                 const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-
+                
                 if (text) {
-                    displayResult(text);
+                    resultBox.textContent = text;
+                    resultBox.classList.add('bg-blue-50', 'text-blue-800', 'border-blue-200');
                 } else {
-                    displayError("Analysis failed. The model returned an empty response.");
+                    throw new Error("Empty response received from API.");
                 }
-
             } catch (error) {
-                console.error("Gemini API Error:", error);
-                displayError(error.message);
+                console.error("API Call Failed:", error);
+                resultBox.classList.add('hidden');
+                errorBox.textContent = `Error: ${error.message}. Please check your API Key and try again.`;
+                errorBox.classList.remove('hidden');
             } finally {
-                // UI State: Ready
-                generateButton.disabled = false;
-                buttonText.textContent = "Analyze Food";
-                loader.classList.add('hidden');
+                // 3. Reset State
+                analyzeButton.disabled = false;
+                loadingSpinner.classList.add('hidden');
             }
         }
-        
-        // --- Utility Functions ---
 
-        /**
-         * Helper function to perform fetch with exponential backoff for resilience.
-         */
-        async function fetchWithRetry(url, options, maxRetries = 3, delay = 1000) {
-            for (let i = 0; i < maxRetries; i++) {
-                try {
-                    const response = await fetch(url, options);
-                    if (response.status !== 429) { // Not throttling
-                        return response;
-                    }
-                    if (i < maxRetries - 1) {
-                        await new Promise(resolve => setTimeout(resolve, delay));
-                        delay *= 2; // Exponential backoff
-                    }
-                } catch (error) {
-                    if (i < maxRetries - 1) {
-                        await new Promise(resolve => setTimeout(resolve, delay));
-                        delay *= 2;
-                    } else {
-                        throw error;
-                    }
-                }
-            }
-            throw new Error('Max retries reached, still throttled or failing.');
+        // Initial check to enable button if input has text (for cases like refresh)
+        if (foodInput.value.trim() !== '') {
+            analyzeButton.disabled = false;
         }
-
-        /**
-         * Displays the final generated text result.
-         */
-        function displayResult(text) {
-            outputContainer.classList.remove('hidden');
-            resultText.innerHTML = text.replace(/\n/g, '<br>'); // Display newlines properly
-            errorText.classList.add('hidden');
-        }
-
-        /**
-         * Displays an error message to the user.
-         */
-        function displayError(message) {
-            outputContainer.classList.remove('hidden');
-            resultText.textContent = "Error";
-            errorText.textContent = message;
-            errorText.classList.remove('hidden');
-        }
-
     </script>
 </body>
 </html>
