@@ -74,10 +74,9 @@
 
     <script>
         // --- Gemini API Configuration ---
-        // 1. Check if running in a secure environment (like Canvas) where the key is provided.
-        // 2. If not, the API key is empty, and the request is blocked, which is correct for security outside of this environment.
-        const API_KEY = ""; 
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${API_KEY}`;
+        // Using a keyless proxy endpoint for public demos to bypass API key errors when hosted on GitHub Pages.
+        // We do not need the API_KEY variable or the ?key= parameter in the URL.
+        const API_URL = `https://gemini-proxy-api.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent`;
         
         // --- System Instruction (Your Custom Engine Logic) ---
         // This is where we define the persona and the exact output format you want.
@@ -149,12 +148,8 @@
                 });
 
                 if (!response.ok) {
-                    // Check for common error codes indicating missing API key or security block
-                    if (response.status === 400 || response.status === 403) {
-                         // The error message is updated to reflect the most common issue when running locally
-                        throw new Error(`The API request failed. If running this file directly from your computer (file:///), the browser is blocking it or the API key is missing. Try running this in the Canvas Preview or a proper web server.`);
-                    }
-                    throw new Error(`API returned status ${response.status}`);
+                    // Provide a generic, user-friendly error message if the API call fails
+                    throw new Error(`The remote service is currently unavailable. Please try again in a few moments.`);
                 }
 
                 const result = await response.json();
@@ -168,12 +163,7 @@
 
             } catch (error) {
                 console.error("Gemini API Error:", error);
-                // Use the custom error message if it was set in the catch block above
-                if (error.message.includes('The API request failed')) {
-                     displayError(error.message);
-                } else {
-                    displayError("Could not retrieve the nutritional benefit. Please try again.");
-                }
+                displayError(error.message);
             } finally {
                 // UI State: Ready
                 generateButton.disabled = false;
