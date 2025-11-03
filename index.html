@@ -89,7 +89,8 @@
         // Set the API Key and URL for the standard Gemini endpoint
         // NOTE: Replace "YOUR_API_KEY_HERE" with your actual key.
         const API_KEY = "AIzaSyCHyx_WeGZ3xhhohhNf1RaLLtwPA0PGYhY"; 
-        
+        const API_KEY_PLACEHOLDER = "AIzaSyCHyx_WeGZ3xhhohhNf1RaLLtwPA0PGYhY";
+
         // Use the standard, reliable API endpoint
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${API_KEY}`;
         
@@ -155,8 +156,8 @@
             if (!foodName) return;
             
             // 1. Check for API Key
-            if (API_KEY === "AIzaSyCHyx_WeGZ3xhhohhNf1RaLLtwPA0PGYhY" || API_KEY === "") {
-                errorBox.textContent = "Configuration Error: Please replace 'YOUR_API_KEY_HERE' in the code with your actual Gemini API Key.";
+            if (API_KEY === API_KEY_PLACEHOLDER || API_KEY === "") {
+                errorBox.textContent = "Configuration Error: Please replace the placeholder API key in the code with your actual Gemini API Key.";
                 errorBox.classList.remove('hidden');
                 resultBox.classList.add('hidden');
                 return;
