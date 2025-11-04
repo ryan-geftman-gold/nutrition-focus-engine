@@ -43,6 +43,8 @@
   </div>
 
   <script>
+// --- Custom API Configuration ---
+const API_URL = "https://focus-engine-api.vercel.app/api/generate";
     const foodInput = document.getElementById('foodInput');
     const analyzeButton = document.getElementById('analyzeButton');
     const resultBox = document.getElementById('resultBox');
@@ -53,80 +55,46 @@
     function toggleButton() {
       analyzeButton.disabled = foodInput.value.trim() === '';
     }
+// Function to display the analysis result
+async function generateNutritionFocus() {
+  const foodName = foodInput.value.trim();
+  if (!foodName) return;
 
-    // Simple mock "analysis" function: returns 2-sentence response following your required structure.
-    function mockAnalyze(food) {
-      // Basic mapping for a few known foods; otherwise a safe default.
-      const map = {
-        avocado: {
-          nutrient: "monounsaturated fat",
-          functions: "heart health and steady energy",
-          why: "It helps lower bad cholesterol while providing lasting satiety, supporting better weight control and long-term cardiovascular health"
-        },
-        quinoa: {
-          nutrient: "complete plant protein",
-          functions: "muscle repair and balanced blood sugar",
-          why: "It provides all essential amino acids needed for rebuilding tissues and helps stabilize energy levels between meals, supporting sustained activity and metabolic health"
-        },
-        walnuts: {
-          nutrient: "omega-3 fatty acids (ALA)",
-          functions: "brain and heart support",
-          why: "These fats support healthy brain function and reduce inflammation, helping cognitive performance and long-term heart health"
-        },
-      };
+  // Clear UI and show loading
+  resultBox.classList.add('hidden');
+  errorBox.classList.add('hidden');
+  resultBox.textContent = '';
+  errorBox.textContent = '';
 
-      const key = food.toLowerCase().trim();
-      const entry = map[key] || {
-        nutrient: "a concentrated set of beneficial nutrients",
-        functions: "important bodily functions",
-        why: "These nutrients contribute to better function and well-being when included regularly in a balanced diet"
-      };
+  analyzeButton.disabled = true;
+  loadingSpinner.classList.remove('hidden');
+  analyzeLabel.textContent = 'Analyzing...';
 
-      // Build the two-sentence response exactly as required
-      const sentence1 = `The main health benefit of ${food}, above all others, is their role as an exceptional source of ${entry.nutrient}, which is crucial for ${entry.functions}.`;
-      const sentence2 = `This ${entry.nutrient} actively helps to ${entry.why.split(',')[0]}, while supporting ${entry.why.split(' and ')[1] || 'overall health'} and promoting long-term well-being!`;
+  try {
+    // Call your live API on Vercel
+    const response = await fetch(`${API_URL}?food=${encodeURIComponent(foodName)}`);
+    const result = await response.json();
+    const text = result.text;
 
-      return `${sentence1} ${sentence2}`;
+    if (text && text !== "No response") {
+      resultBox.textContent = text;
+      resultBox.classList.remove('hidden');
+    } else {
+      errorBox.textContent = "Could not retrieve the nutritional benefit. Please try again.";
+      errorBox.classList.remove('hidden');
     }
+  } catch (err) {
+    console.error("Fetch error:", err);
+    errorBox.textContent = "Network Error: Failed to connect to the API.";
+    errorBox.classList.remove('hidden');
+  } finally {
+    analyzeLabel.textContent = 'Analyze Food';
+    loadingSpinner.classList.add('hidden');
+    toggleButton();
+  }
+}
 
-    async function generateNutritionFocus() {
-      const foodName = foodInput.value.trim();
-      if (!foodName) return;
 
-      // UI: clear and show loading
-      resultBox.classList.add('hidden');
-      errorBox.classList.add('hidden');
-      resultBox.textContent = '';
-      errorBox.textContent = '';
-
-      analyzeButton.disabled = true;
-      loadingSpinner.classList.remove('hidden');
-      analyzeLabel.textContent = 'Analyzing...';
-
-      try {
-        // Simulate short delay as if contacting an API
-        await new Promise(resolve => setTimeout(resolve, 700));
-
-        const text = mockAnalyze(foodName);
-
-        // Display result
-        resultBox.textContent = text;
-        resultBox.classList.remove('hidden');
-      } catch (err) {
-        errorBox.textContent = 'Unexpected error: ' + (err.message || err);
-        errorBox.classList.remove('hidden');
-      } finally {
-        analyzeLabel.textContent = 'Analyze Food';
-        loadingSpinner.classList.add('hidden');
-        toggleButton();
-      }
-    }
-
-    // Allow Enter to submit
-    foodInput.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter' && !analyzeButton.disabled) {
-        generateNutritionFocus();
-      }
     });
 
     window.onload = toggleButton;
